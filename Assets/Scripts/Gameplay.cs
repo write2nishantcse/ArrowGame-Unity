@@ -5,16 +5,16 @@ using UnityEngine;
 public class Gameplay : MonoBehaviour
 {
     [SerializeField]
-    public Transform pointPrefab;
+    Transform pointPrefab;
+
+    [SerializeField]
+    float pointSize;
+
+    [SerializeField]
+    float spacing;
 
     [SerializeField, Range(10, 100)]
     int resolution = 10;
-
-    [SerializeField, Range(2, 100)]
-    float range = 4;
-
-    [SerializeField]
-    float maxPointScale = 0.4f;
 
     public Transform startingPoint;
 
@@ -22,33 +22,54 @@ public class Gameplay : MonoBehaviour
 
     public float gravity = 9.8f;
 
-    public Transform[] points;
+    public List<Transform> points;
 
     [Header("Test Variables...")]
     public Transform testCube;
     [SerializeField] Vector3 initialVelocityDirection;
     [SerializeField] Vector3 initialVelocity;
     [SerializeField] float angle;
+    [SerializeField] int lastResolution;
 
     private void Awake()
     {
-        float rangeEffectedPosition = range / resolution;
-        float rangeEffectedScale = Mathf.Clamp(rangeEffectedPosition, 0, maxPointScale);
+        InstantiatePointsBasedOnResolution();
+        SetpositionInX();
+    }
 
-        Vector3 position = Vector3.zero;
-        var scale = Vector3.one * rangeEffectedScale;
-
-        points = new Transform[resolution];
-        for (int i = 0; i < points.Length; i++)
+    void InstantiatePointsBasedOnResolution()
+    {
+        if (points == null)
         {
-            Transform point = Instantiate(pointPrefab);
-            position.x = i * rangeEffectedPosition;
-            point.localPosition = position;
-            point.localScale = scale;
-            point.SetParent(transform, false);
-
-            points[i] = point;
+            points = new List<Transform>();
         }
+        int i = 0;
+        for (i = 0; i < resolution; i++)
+        {
+            // create new point
+            if (i >= points.Count)
+            {
+                Transform point = Instantiate(pointPrefab);
+                point.parent = this.transform;
+                points.Add(point);
+
+            }
+            else
+            {
+                points[i].gameObject.SetActive(true);
+            }
+        }
+
+        // If extra points are there in list
+        if (i < points.Count)
+        {
+            for (; i < points.Count; i++)
+            {
+                points[i].gameObject.SetActive(false);
+            }
+        }
+
+        lastResolution = resolution;
     }
 
     // Start is called before the first frame update
@@ -63,40 +84,36 @@ public class Gameplay : MonoBehaviour
         transform.position = startingPoint.position;
         GetDirectionOfVelocity();
         FindAngle();
-        CalculateVariables();
         SetpositionInX();
-        for (int i = 0; i < points.Length; i++) 
+        for (int i = 0; i < points.Count; i++) 
         {
             Transform point = points[i];
             Vector3 position = point.localPosition;
-            position.y = FindPointionInY(position.x);
+            position.y = FindPositionInY(position.x);
             point.localPosition = position;
         }
     }
 
     void SetpositionInX()
     {
-        float rangeEffectedPosition = range / resolution;
-        float rangeEffectedScale = Mathf.Clamp(rangeEffectedPosition, 0, maxPointScale);
+        if (lastResolution != resolution)
+        {
+            InstantiatePointsBasedOnResolution();
+        }
 
         Vector3 position = Vector3.zero;
-        var scale = Vector3.one * rangeEffectedScale;
+        var scale = Vector3.one * pointSize;
 
-        for (int i = 0; i < points.Length; i++)
+        for (int i = 0; i < points.Count; i++)
         {
             Transform point = points[i];
-            position.x = i * rangeEffectedPosition;
+            position.x = i * spacing;
             point.localPosition = position;
             point.localScale = scale;
         }
     }
 
-    void CalculateVariables()
-    {
-        range = initialSpeed * initialSpeed * Mathf.Sin(2f * angle) / gravity;
-    }
-
-    float FindPointionInY(float DistX)
+    float FindPositionInY(float DistX)
     {
         // Calculate time
         float time = DistX / initialVelocity.x;

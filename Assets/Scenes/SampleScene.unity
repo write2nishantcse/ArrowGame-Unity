@@ -246,13 +246,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pointPrefab: {fileID: 7325652071342018809, guid: 408f09e0e2e4631468c3a2b89ba83207, type: 3}
+  pointSize: 0.3
+  spacing: 0.7
   resolution: 10
-  range: 2
-  maxPointScale: 0.3
   startingPoint: {fileID: 879413015}
-  initialVelocity: 6
+  initialSpeed: 10
+  gravity: 10
   points: []
   testCube: {fileID: 1790325633}
+  initialVelocityDirection: {x: 0, y: 0, z: 0}
+  initialVelocity: {x: 0, y: 0, z: 0}
+  angle: 0
+  lastResolution: 0
 --- !u!4 &761031735
 Transform:
   m_ObjectHideFlags: 0
