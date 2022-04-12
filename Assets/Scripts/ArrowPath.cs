@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Gameplay : MonoBehaviour
+public class ArrowPath : MonoBehaviour
 {
     [SerializeField]
     Transform pointPrefab;
@@ -18,15 +18,9 @@ public class Gameplay : MonoBehaviour
 
     public Transform startingPoint;
 
-    public float initialSpeed;
-
-    public float gravity = 9.8f;
-
     public List<Transform> points;
 
     [Header("Test Variables...")]
-    public Transform testCube;
-    [SerializeField] Vector3 initialVelocityDirection;
     [SerializeField] Vector3 initialVelocity;
     [SerializeField] float angle;
     [SerializeField] int lastResolution;
@@ -72,15 +66,13 @@ public class Gameplay : MonoBehaviour
         lastResolution = resolution;
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     // Update is called once per frame
     void Update()
     {
+        if (!DataStore.drawPoints)
+        {
+            return;
+        }
         transform.position = startingPoint.position;
         GetDirectionOfVelocity();
         FindAngle();
@@ -118,23 +110,23 @@ public class Gameplay : MonoBehaviour
         // Calculate time
         float time = DistX / initialVelocity.x;
 
-        float DistY = initialVelocity.y * time - (0.5f) * gravity * time * time;
+        if (time == float.NaN)
+        {
+            time = 0;
+        }
+
+        float DistY = initialVelocity.y * time - (0.5f) * DataStore.gravity * time * time;
 
         return DistY;
     }
 
     void FindAngle()
     {
-        angle = Mathf.Atan(initialVelocityDirection.y / initialVelocityDirection.x);
+        angle = Mathf.Atan(DataStore.initialVelocityDirn.y / DataStore.initialVelocityDirn.x);
     }
 
     void GetDirectionOfVelocity()
     {
-        Vector3 camPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        camPos.z = 0;
-        testCube.transform.position = camPos;
-        Debug.DrawLine(startingPoint.position, camPos);
-        initialVelocityDirection = (camPos - startingPoint.position).normalized;
-        initialVelocity = initialSpeed * initialVelocityDirection;
+        initialVelocity = DataStore.speed * DataStore.initialVelocityDirn;
     }
 }
